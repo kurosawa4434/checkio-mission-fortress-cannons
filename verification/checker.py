@@ -116,7 +116,7 @@ def arc_check(degree, vec):
         return True
 
 
-def arc_hexes(y, d, cannon, enemies):
+def target_hexes(y, d, cannon, enemies):
     deg, min_range, max_range = cannon
     result = set()
     for e in enemies:
@@ -126,22 +126,26 @@ def arc_hexes(y, d, cannon, enemies):
     return result
 
 
-def combination_of_dirs(n, ds):
-    if not n:
-        yield ds
+def combination_of_results(cannon_results, defeat_enemies):
+    if not cannon_results:
+        yield defeat_enemies
     else:
-        for d in directions:
-            yield from combination_of_dirs(n-1, ds+[d])
+        for results in cannon_results[0]:
+            yield from combination_of_results(cannon_results[1:], defeat_enemies | results)
 
 
 def fortress_cannons(fort, cannons, enemies, output):
 
     if output is None:
-        for dir in combination_of_dirs(len(cannons), []):
-            hexes = set()
-            for i, cannon in enumerate(cannons):
-                hexes |= arc_hexes(fort, directions.index(dir[i]), cannon, enemies)
-            if hexes >= enemies:
+        cannon_results = []
+        for cn in cannons:
+            results = set()
+            for dr in range(6):
+                results.add(frozenset(target_hexes(fort, dr, cn, enemies)))
+            cannon_results.append(results)
+
+        for defeat_enemies in combination_of_results(cannon_results, set()):
+            if defeat_enemies >= enemies:
                 return False
         return True
 
@@ -152,7 +156,8 @@ def fortress_cannons(fort, cannons, enemies, output):
 
     hexes = set()
     for i, cannon in enumerate(cannons):
-        hexes |= arc_hexes(fort, directions.index(output[i]), cannon, enemies)
+        hexes |= target_hexes(fort, directions.index(output[i]), cannon, enemies)
+
     return hexes >= enemies
 
 
@@ -160,5 +165,9 @@ if __name__ == '__main__':
     assert fortress_cannons('F4', [(0, 1, 3), (0, 1, 2)], {'C3', 'F2'}, ['NW', 'N'])
     assert fortress_cannons('F4', [(0, 1, 3), (0, 1, 2), (0, 1, 2)], {'C3', 'F2', 'F6'}, ['NW', 'N', 'S'])
     assert fortress_cannons('F4', [(120, 1, 3)], {'H3', 'F5'}, ['SE'])
-    assert fortress_cannons('F4', [(120, 0, 0)], {'H3', 'F5'}, None)
+    # assert fortress_cannons('F4', [(120, 1, 3)], {'H3', 'F5'}, None)
+    assert fortress_cannons("J1", [(120, 2, 7), (60, 3, 6)], {'H3', 'E8'}, None)
+    assert fortress_cannons("F8", [[120, 1, 6], [0, 1, 6], [120, 3, 5]], {"A1", "B7", "F6", "B1"}, None)
+    assert fortress_cannons("J3",[[120,1,5],[60,2,6],[60,3,5],[0,2,9]],{"L9","E2"}, None)
+    assert fortress_cannons("C2",[[60,2,9],[60,3,5],[120,2,7],[60,3,6]],{"K8"}, None)
     assert fortress_cannons('A1', [(0, 1, 11)], {'L6'}, ['SE'])

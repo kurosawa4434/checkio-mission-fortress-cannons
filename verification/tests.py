@@ -13,10 +13,9 @@ from string import ascii_uppercase as au
 randoms = []
 all_coords = [c+str(r) for c in au[:12] for r in range(1, 10)]
 
-for _ in range(6):
+for _ in range(10):
     coords = sample(all_coords, randint(2, 5))
     fort, enemies = coords[0], coords[1:]
-    print(fort, enemies)
     cannons = []
     for _ in range(randint(2, 4)):
         arc = [0, 60, 60, 60, 120, 120][randint(0, 5)]
