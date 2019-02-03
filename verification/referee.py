@@ -40,7 +40,7 @@ def check_result(inputs, user_result):
     return result, (user_result, 'Success')
 
 cover = """def cover(func, data):
-    return func(data[0], data[1], set(data[2]))
+    return func(data[0], list(map(tuple, data[1])), set(data[2]))
 """
 
 api.add_listener(
